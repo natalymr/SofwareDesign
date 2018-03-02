@@ -26,7 +26,6 @@ def echo(args):
 
 
 def cat(args):
-    print(args)
     output = output_stream()
     if type(args[0]) != type(output):
 
