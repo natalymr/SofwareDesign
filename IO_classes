@@ -21,4 +21,4 @@ class output_stream:
         self.__io_str.write(str)
 
     def convert_to_input(self):
-        return InputStream(self.__io_str.getvalue())
+        return input_stream(self.__io_str.getvalue())
