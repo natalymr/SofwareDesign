@@ -1,4 +1,5 @@
-from src.cli import dict_of_variables
+from src.cli import *
+
 
 # =
 def exe_equal_sign(expression):
@@ -19,7 +20,6 @@ def exe_equal_sign(expression):
             val = val[:-1]
 
     dict_of_variables[name] = val
-    print(dict_of_variables)
 
     return
 
