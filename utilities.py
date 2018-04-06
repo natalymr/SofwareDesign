@@ -10,6 +10,26 @@ def exit(arg=None):
     sys.exit()
 
 
+def cd(args):
+    if args is not None and isinstance(args[0], str):
+        dir = args[0]
+        os.chdir(dir)
+    return output_stream()
+
+
+def ls(args=None):
+    output = output_stream()
+    if args is None or type(args[0]) == type(output):
+        dir = '.'
+    else:
+        dir = args[0]
+    if not dir.startswith('/'):
+        dir = os.path.join(os.curdir, dir)
+    content = '\n'.join(os.listdir(dir))
+    output.write_to_stream(content)
+    return output
+
+
 def pwd(arg=None):
     output = output_stream()
     output.write_to_stream(os.getcwd())
