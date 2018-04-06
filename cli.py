@@ -1,10 +1,11 @@
 import re
 
-from src.aux_functions import *
-from src.decorators import *
-from src.utilites import *
+from aux_functions import *
+from decorators import *
+from utilities import *
+from IO_classes import *
 
-dict_of_implemented_commands = {'exit' : exit, 'pwd' : pwd, 'echo' : echo, 'cat' : cat, 'wc' : wc}
+dict_of_implemented_commands = {'exit': exit, 'pwd': pwd, 'echo': echo, 'cat': cat, 'wc': wc, 'ls': ls, 'cd': cd}
 dict_of_variables = {}
 
 
@@ -34,11 +35,10 @@ def console_emulator():
                 if tmp:
                     second_ind = j
 
-            input_list[first_ind : second_ind + 1] = [''.join(input_list[first_ind : second_ind + 1])]
+            input_list[first_ind: second_ind + 1] = [''.join(input_list[first_ind: second_ind + 1])]
 
         if "'" in input_str:
             pass
-
 
         if "|" in input_list:
             pipe_execution(input_list)
@@ -47,7 +47,6 @@ def console_emulator():
 
 
 def pipe_execution(input_list):
-
     # get indices of |
     pipe_indices = []
     idx = -1
@@ -74,7 +73,7 @@ def execute_command(list, first_ind, last_ind, stream_arg=None):
     # if there is a $
     regex = re.compile(".*(\$).*")
     dol_sign = [m.group(0) for ind in range(first_ind, last_ind)
-              for m in [regex.search(list[ind])] if m]
+                for m in [regex.search(list[ind])] if m]
 
     if dol_sign:
         dol_sign = dol_sign[0]
@@ -88,7 +87,7 @@ def execute_command(list, first_ind, last_ind, stream_arg=None):
     # if there is a =
     regex = re.compile(".*(=).*")
     eq_sign = [m.group(0) for ind in range(first_ind, last_ind)
-           for m in [regex.search(list[ind])] if m]
+               for m in [regex.search(list[ind])] if m]
 
     if eq_sign:
         eq_sign = eq_sign[0]
@@ -139,3 +138,7 @@ def execute_command(list, first_ind, last_ind, stream_arg=None):
                 result = func_with_args(not_implemented_functions, args)
 
     return result
+
+
+if __name__ == '__main__':
+    console_emulator()

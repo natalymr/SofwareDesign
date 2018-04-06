@@ -1,8 +1,9 @@
 import os
+import shlex
 import sys
 import subprocess
 
-from src.IO_classes import *
+from IO_classes import *
 
 
 def exit(arg=None):

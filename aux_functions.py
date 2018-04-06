@@ -1,4 +1,4 @@
-from src.cli import *
+from cli import *
 
 
 # =
