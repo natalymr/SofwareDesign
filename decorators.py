@@ -1,4 +1,4 @@
-from src.IO_classes import *
+from IO_classes import *
 
 
 def func_with_args(func, *args):

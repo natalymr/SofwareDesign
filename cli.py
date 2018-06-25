@@ -1,10 +1,18 @@
 import re
 
-from src.aux_functions import *
-from src.decorators import *
-from src.utilites import *
+from typing import List, Dict, Callable
+from decorators import *
+from utilities import *
 
-dict_of_implemented_commands = {'exit' : exit, 'pwd' : pwd, 'echo' : echo, 'cat' : cat, 'wc' : wc}
+CommandRegistry = Dict[str, Callable[[str], output_stream]]
+dict_of_implemented_commands: CommandRegistry = {
+    'exit' : exit,
+    'pwd' : pwd,
+    'echo' : echo,
+    'cat' : cat,
+    'wc' : wc
+}
+
 dict_of_variables = {}
 
 
@@ -39,7 +47,6 @@ def console_emulator():
         if "'" in input_str:
             pass
 
-
         if "|" in input_list:
             pipe_execution(input_list)
         else:
@@ -67,34 +74,37 @@ def pipe_execution(input_list):
     print_func_output(execute_command, input_list, start_ind_command, len(input_list), stream_io)
 
 
-def execute_command(list, first_ind, last_ind, stream_arg=None):
+def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: output_stream = None) -> output_stream:
     global dict_of_implemented_commands
     global dict_of_variables
 
     # if there is a $
     regex = re.compile(".*(\$).*")
     dol_sign = [m.group(0) for ind in range(first_ind, last_ind)
-              for m in [regex.search(list[ind])] if m]
+                for m in [regex.search(list[ind])] if m]
 
+    dol_sign_flag = False
     if dol_sign:
+        dol_sign_flag = True
         dol_sign = dol_sign[0]
 
         var_output = output_stream()
-
-        var_output.write_to_stream(exe_dollar_sign(dol_sign))
-
-        return var_output
+        option, res = exe_dollar_sign(dol_sign)
+        if option:
+            var_output.write_to_stream(res)
+            return var_output
+        else:
+            list[first_ind] = res
 
     # if there is a =
     regex = re.compile(".*(=).*")
     eq_sign = [m.group(0) for ind in range(first_ind, last_ind)
-           for m in [regex.search(list[ind])] if m]
+               for m in [regex.search(list[ind])] if m]
 
-    if eq_sign:
+    if eq_sign and not dol_sign_flag:
         eq_sign = eq_sign[0]
 
         empty_output = output_stream()
-
         exe_equal_sign(eq_sign)
 
         return empty_output
@@ -139,3 +149,58 @@ def execute_command(list, first_ind, last_ind, stream_arg=None):
                 result = func_with_args(not_implemented_functions, args)
 
     return result
+
+
+# =
+def exe_equal_sign(expression):
+
+    name = ""
+    val = ""
+    ind_eq = expression.find("=")
+
+    for i in range(0, ind_eq):
+        name += expression[i]
+    for i in range(ind_eq + 1, len(expression)):
+        val += expression[i]
+
+    if '"' in val or "'" in val:
+        if (val[0] == '"' and val[len(val) - 1] == '"')\
+                or (val[0] == "'" and val[len(val) - 1] == "'"):
+            val = val[1:]
+            val = val[:-1]
+
+    dict_of_variables[name] = val
+
+    return
+
+
+# $
+def exe_dollar_sign(expression):
+
+    ind_dollar = expression.find("$")
+    name = ""
+
+    for i in range(ind_dollar + 1, len(expression)):
+        name += expression[i]
+
+    if "=" in expression:
+        ind_equal = expression.find("=")
+        var = ""
+        for i in range(0, ind_equal):
+            var += expression[i]
+        exe_equal_sign(var + "=" + str(dict_of_variables[name]))
+
+    # this was command call; for example 1. x=ho 2. ec$x 3
+    if expression[:ind_dollar] + dict_of_variables[name] in dict_of_implemented_commands:
+        return False, expression[:ind_dollar] \
+                    + dict_of_variables[name]
+
+    return True, str(dict_of_variables[name])
+
+
+def main():
+    console_emulator()
+
+
+if __name__ == '__main__':
+    main()

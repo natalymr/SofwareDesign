@@ -2,7 +2,7 @@ import os
 import sys
 import subprocess
 
-from src.IO_classes import *
+from IO_classes import *
 
 
 def exit(arg=None):
@@ -18,9 +18,12 @@ def pwd(arg=None):
 def echo(args):
     output = output_stream()
 
-    for i in args:
-        if type(i) != type(output):
-            output.write_to_stream(str(i))
+    output_str = " ".join(
+        str(i) for i in args
+        if type(i) != type(output)
+    )
+
+    output.write_to_stream(output_str)
 
     return output
 
@@ -54,6 +57,8 @@ def wc(args):
     if type(args[0]) != type(output):
         it = 0
 
+        tmp_output = []
+
         num_of_lines = []
         num_of_words = []
         num_of_symbols = []
@@ -69,19 +74,25 @@ def wc(args):
                     line_in_list = line.split()
                     tmp_lines += 1
                     tmp_words += len(line_in_list)
-                    for each_word in line_in_list:
-                        tmp_symbols += len(each_word)
+                    tmp_symbols += len(line)
 
                 num_of_lines.append(tmp_lines)
                 num_of_words.append(tmp_words)
                 num_of_symbols.append(tmp_symbols)
 
-                output.write_to_stream(str(num_of_lines[it]) + ' ' + str(num_of_words[it]) + ' ' +
-                                       str(num_of_symbols[it]) + '\n')
+                output_str = " ".join(
+                    str(i) for i in args
+                    if type(i) != type(output)
+                )
+
+                tmp_output.append(str(num_of_lines[it]) + ' ' + str(num_of_words[it]) + ' ' +
+                                       str(num_of_symbols[it]))
+
                 it += 1
+
+        output.write_to_stream("\n".join(tmp_output))
     else:
 
-        tmp_input = input_stream()
         tmp_input = args[0].convert_to_input()
         data_by_lines = tmp_input.get_input().split('\n')
 
@@ -93,9 +104,11 @@ def wc(args):
             line_in_list = line.split()
             lines += 1
             words += len(line_in_list)
-            for each_word in line_in_list:
-                symbols += len(each_word)
-        output.write_to_stream(str(lines) + ' ' + str(words) + ' ' + str(symbols) + '\n')
+            symbols += len(line)
+            #for each_word in line_in_list:
+            #    symbols += len(each_word)
+
+        output.write_to_stream(str(lines) + ' ' + str(words) + ' ' + str(symbols))
 
     return output
 
