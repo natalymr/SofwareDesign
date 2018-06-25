@@ -6,16 +6,37 @@ from IO_classes import *
 
 
 def exit(arg=None):
+    """
+    Function that emulates command "exit".
+    Exit from CLI.
+    :param arg:
+    :return:
+    """
+
     sys.exit()
 
 
 def pwd(arg=None):
+    """
+    Function that emulates command "pwd".
+    Print current directory.
+    :param arg:
+    :return:
+    """
+
     output = output_stream()
     output.write_to_stream(os.getcwd())
     return output
 
 
 def echo(args):
+    """
+    Function that emulates command "echo".
+    Print received arg.
+    :param args: list of files OR list with output_object of previous command.
+    :return:
+    """
+
     output = output_stream()
 
     output_str = " ".join(
@@ -29,6 +50,13 @@ def echo(args):
 
 
 def cat(args):
+    """
+    Function that emulates command "cat".
+    Print content.
+    :param args: list of files OR list with output_object of previous command.
+    :return:
+    """
+
     output = output_stream()
     if type(args[0]) != type(output):
 
@@ -51,6 +79,12 @@ def cat(args):
 
 
 def wc(args):
+    """
+    Function that emulates command "wc".
+    Print number of lines, words and bytes.
+    :param args: list of files OR list with output_object of previous command.
+    :return:
+    """
 
     output = output_stream()
 
@@ -114,6 +148,12 @@ def wc(args):
 
 
 def not_implemented_functions(args):
+    """
+    This function is called when not implemented function was called.
+    This function call subprocess with specified command with args.
+    :param args: list
+    :return:
+    """
 
     tmp = subprocess.run(args,
                          stdout=subprocess.PIPE,

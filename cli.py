@@ -7,10 +7,10 @@ from utilities import *
 CommandRegistry = Dict[str, Callable[[str], output_stream]]
 dict_of_implemented_commands: CommandRegistry = {
     'exit' : exit,
-    'pwd' : pwd,
+    'pwd'  : pwd,
     'echo' : echo,
-    'cat' : cat,
-    'wc' : wc
+    'cat'  : cat,
+    'wc'   : wc
 }
 
 dict_of_variables = {}
@@ -18,6 +18,13 @@ dict_of_variables = {}
 
 # main function
 def console_emulator():
+    """
+    Function that emulate command line.
+    There is an infinity loop in which commands with args are read from console
+    After it if there are pipes in a readed line, pipe_execution is called.
+    Otherwise execute_command is called and prints a result.
+    """
+
     global dict_of_implemented_commands
     global dict_of_variables
 
@@ -54,6 +61,10 @@ def console_emulator():
 
 
 def pipe_execution(input_list):
+    """
+    Identify pipes's indices, call each command separately.
+    :param input_list: list of splitted by " " input string.
+    """
 
     # get indices of |
     pipe_indices = []
@@ -75,6 +86,14 @@ def pipe_execution(input_list):
 
 
 def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: output_stream = None) -> output_stream:
+    """
+    Function that execute given command with args.
+    :param list: input string that was splotted by " "
+    :param first_ind: first ind of current command
+    :param last_ind: last ind of current command
+    :param stream_arg: a result of previous command
+    :return: output_stream
+    """
     global dict_of_implemented_commands
     global dict_of_variables
 
@@ -153,6 +172,12 @@ def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: 
 
 # =
 def exe_equal_sign(expression):
+    """
+    Function that correctly handle input str with =.
+    Supplements dict, etc.
+    :param expression: str that contains "="
+    :return:
+    """
 
     name = ""
     val = ""
@@ -176,6 +201,13 @@ def exe_equal_sign(expression):
 
 # $
 def exe_dollar_sign(expression):
+    """
+    Function that hanfle correctly input str with $.
+    Substitutes a value of a variable.
+    :param expression:
+    :return: True, str - a case when only substituting value was needed.
+             False, str - a case when a new meaning of expression appeared.
+    """
 
     ind_dollar = expression.find("$")
     name = ""

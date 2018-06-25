@@ -2,6 +2,11 @@ import io
 
 
 class input_stream:
+    """
+    This class allows to connect results of several commands,
+    connected with pipes.
+    The object of this class is an input to a next command.
+    """
 
     def __init__(self, input=None):
         self.__io_str = io.StringIO()
@@ -13,6 +18,11 @@ class input_stream:
 
 
 class output_stream:
+    """
+    This class allows to connect results of several commands,
+    connected with pipes.
+    The object of this class is a result of a current command.
+    """
 
     def __init__(self):
         self.__io_str = io.StringIO()
