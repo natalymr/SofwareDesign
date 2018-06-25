@@ -1,2 +1,2 @@
 # SofwareDesign
-This repo contain hw solutions
+This repo contain CLI realization.
