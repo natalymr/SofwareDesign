@@ -90,17 +90,3 @@ class TestExecuteCommand(TestCase):
 
 def stream_to_string(stream: output_stream):
     return stream.convert_to_input().get_input()
-
-
-class TestPipeExecution(TestCase):
-
-    @mock.patch("cli.execute_command", returned_value = None)
-    def test_correct_divide_commands_by_pipes(self, execute_command_mock : Mock):
-        all_commands_without_pipes = ["echo", "echo", "hello", "x=1", "cat", "helloworld.txt"]
-        expected_calls = [(all_commands_without_pipes, 0, 3),
-                 (all_commands_without_pipes, 3, 4, output_stream()),
-                 (all_commands_without_pipes, 4, 6, output_stream())]
-
-        pipe_execution(["echo", "echo", "hello", "|", "x=1", "|", "cat", "helloworld.txt"])
-
-        self.assertTrue(execute_command_mock.call_args_list == expected_calls)
