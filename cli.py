@@ -1,6 +1,8 @@
 import re
 
 from typing import List, Dict, Callable
+
+from grep import grep
 from decorators import *
 from utilities import *
 
@@ -10,7 +12,8 @@ dict_of_implemented_commands: CommandRegistry = {
     'pwd'  : pwd,
     'echo' : echo,
     'cat'  : cat,
-    'wc'   : wc
+    'wc'   : wc,
+    'grep': grep
 }
 
 dict_of_variables = {}
