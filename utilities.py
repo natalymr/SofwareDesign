@@ -36,7 +36,6 @@ def echo(args):
     :param args: list of files OR list with output_object of previous command.
     :return:
     """
-
     output = output_stream()
 
     output_str = " ".join(

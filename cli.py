@@ -32,6 +32,8 @@ def console_emulator():
         input_str = input()
         input_list = input_str.split()
 
+        # find expressions in "
+        # and join it in one element of a list
         if '"' in input_str:
             first_ind = 0
             second_ind = 0
@@ -49,10 +51,30 @@ def console_emulator():
                 if tmp:
                     second_ind = j
 
-            input_list[first_ind : second_ind + 1] = [''.join(input_list[first_ind : second_ind + 1])]
+            input_list[first_ind: second_ind + 1] = [' '.join(input_list[first_ind : second_ind + 1])]
+            # delete "
+            input_list[first_ind] = input_list[first_ind].replace('"', '')
 
+        # find expressions in "
+        # and join it in one element of a list
         if "'" in input_str:
-            pass
+            first_ind = 0
+            second_ind = 0
+            for i in range(0, len(input_list)):
+                regex = re.compile(".*(\").*")
+                tmp = regex.search(input_list[i])
+                if tmp:
+                    first_ind = i
+                    break
+
+            for j in range(first_ind, len(input_list)):
+
+                regex = re.compile(".*(\').*")
+                tmp = regex.search(input_list[j])
+                if tmp:
+                    second_ind = j
+
+            input_list[first_ind + 1: second_ind + 1] = [' '.join(input_list[first_ind + 1: second_ind + 1])]
 
         if "|" in input_list:
             pipe_execution(input_list)
@@ -94,6 +116,7 @@ def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: 
     :param stream_arg: a result of previous command
     :return: output_stream
     """
+
     global dict_of_implemented_commands
     global dict_of_variables
 
@@ -101,19 +124,36 @@ def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: 
     regex = re.compile(".*(\$).*")
     dol_sign = [m.group(0) for ind in range(first_ind, last_ind)
                 for m in [regex.search(list[ind])] if m]
+    # if there is a $. pause
 
+    # add the logic related to '
+    # if there is a ' we ignore additional special character, i.e. $
+    # for example, we should use '$x' as $x as a str but not as value of x
+    single_quote_dol_signs = False
+    single_quote = False
+
+    regex = re.compile(".*(\').*")
+    quote_sign = [m.group(0) for ind in range(first_ind, last_ind)
+                  for m in [regex.search(list[ind])] if m]
+    if quote_sign:
+        single_quote = True
+        if dol_sign:
+            single_quote_dol_signs = True
+
+    # if there is a $. continue
     dol_sign_flag = False
-    if dol_sign:
+    if dol_sign and not single_quote_dol_signs:
         dol_sign_flag = True
         dol_sign = dol_sign[0]
 
         var_output = output_stream()
-        option, res = exe_dollar_sign(dol_sign)
+        option, res = find_and_replace_values_of_all_variables(dol_sign)
         if option:
             var_output.write_to_stream(res)
             return var_output
         else:
             list[first_ind] = res
+    # if there is a $. the end
 
     # if there is a =
     regex = re.compile(".*(=).*")
@@ -170,7 +210,6 @@ def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: 
     return result
 
 
-# =
 def exe_equal_sign(expression):
     """
     Function that correctly handle input str with =.
@@ -180,7 +219,7 @@ def exe_equal_sign(expression):
     """
 
     name = ""
-    val = ""
+    val  = ""
     ind_eq = expression.find("=")
 
     for i in range(0, ind_eq):
@@ -188,32 +227,33 @@ def exe_equal_sign(expression):
     for i in range(ind_eq + 1, len(expression)):
         val += expression[i]
 
-    if '"' in val or "'" in val:
-        if (val[0] == '"' and val[len(val) - 1] == '"')\
-                or (val[0] == "'" and val[len(val) - 1] == "'"):
-            val = val[1:]
-            val = val[:-1]
-
     dict_of_variables[name] = val
 
     return
 
 
-# $
-def exe_dollar_sign(expression):
+def find_and_replace_values_of_all_variables(expression):
     """
-    Function that hanfle correctly input str with $.
-    Substitutes a value of a variable.
-    :param expression:
-    :return: True, str - a case when only substituting value was needed.
-             False, str - a case when a new meaning of expression appeared.
+    This function take a string and replace values of variables before which there are $
+    :param expression: this is a string that contains at least one $ sign
+    :return: expression, in which substituted all values
     """
 
-    ind_dollar = expression.find("$")
+    result = ""
     name = ""
+    ind_dollar = expression.find("$")
+    for i in range(ind_dollar):
+        result += expression[i]
 
-    for i in range(ind_dollar + 1, len(expression)):
+    if expression.find("$", ind_dollar + 1) == -1:
+        ind_name_end = len(expression)
+    else:
+        ind_name_end = expression.find("$", ind_dollar + 1)
+
+    for i in range(ind_dollar + 1, ind_name_end):
         name += expression[i]
+
+    result += dict_of_variables[name]
 
     if "=" in expression:
         ind_equal = expression.find("=")
@@ -225,9 +265,25 @@ def exe_dollar_sign(expression):
     # this was command call; for example 1. x=ho 2. ec$x 3
     if expression[:ind_dollar] + dict_of_variables[name] in dict_of_implemented_commands:
         return False, expression[:ind_dollar] \
-                    + dict_of_variables[name]
+               + dict_of_variables[name]
 
-    return True, str(dict_of_variables[name])
+    while True:
+        name = ""
+        ind_dollar = expression.find("$", ind_name_end)
+
+        if ind_dollar == -1:
+            break
+        else:
+            if expression.find("$", ind_dollar + 1) == -1:
+                ind_name_end = len(expression)
+            else:
+                ind_name_end = expression.find("$", ind_dollar + 1)
+
+            for i in range(ind_dollar + 1, ind_name_end):
+                name += expression[i]
+            result += dict_of_variables[name]
+
+    return True, result
 
 
 def main():
