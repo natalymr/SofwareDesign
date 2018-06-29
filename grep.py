@@ -10,6 +10,12 @@ from exception import IncorrectCommand
 
 
 def grep(args: [str]) -> output_stream:
+    """
+    Function that emulates command "grep".
+    Print lines matching a pattern.
+    :param args: list with a flag (optional), a pattern and a resource.
+    :return: output stream
+    """
     result = output_stream()
     if isinstance(args[-1], output_stream):
         input: input_stream = args[-1].convert_to_input()
