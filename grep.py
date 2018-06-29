@@ -1,15 +1,16 @@
 import re
 from argparse import ArgumentParser, Namespace  # command line library
-from collections import namedtuple, deque
+from collections import namedtuple
 from typing import Iterable, Set, Tuple
 
 from IO_classes import output_stream, input_stream
 from colored_text import ANSI_RED, color_range
 
+from exception import IncorrectCommand
+
 
 def grep(args: [str]) -> output_stream:
     result = output_stream()
-
     if isinstance(args[-1], output_stream):
         input: input_stream = args[-1].convert_to_input()
 
@@ -76,7 +77,10 @@ def configure_parser() -> ArgumentParser:
 
 
 def parse_grep_args(args: [str]) -> Namespace:
-    return configure_parser().parse_args(args)
+    try:
+        return configure_parser().parse_args(args)
+    except BaseException:
+        raise RuntimeError("Cannot parse arguments for grep command!")
 
 
 def grep_lines(grep: "Grep", lines: Iterable[str], after_context: int = 0) -> Iterable[str]:
@@ -100,7 +104,6 @@ def make_matches_red(line, matches):
 
 
 GrepMatch = namedtuple("GrepMatch", ["start", "end"])
-
 
 words_regex = re.compile("\\w+")
 

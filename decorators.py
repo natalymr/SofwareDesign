@@ -1,11 +1,15 @@
 from IO_classes import *
+from exception import IncorrectCommand
 
 
 def func_with_args(func, *args):
     """
     Decorator for calling specified fucntions with args
     """
-    return func(*args)
+    try:
+        return func(*args)
+    except BaseException as e:
+        raise IncorrectCommand(cause=e)
 
 
 def print_func_output(func, *args):

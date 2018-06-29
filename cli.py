@@ -5,6 +5,7 @@ from typing import List, Dict, Callable
 from grep import grep
 from decorators import *
 from utilities import *
+from exception import IncorrectCommand
 
 CommandRegistry = Dict[str, Callable[[str], output_stream]]
 dict_of_implemented_commands: CommandRegistry = {
@@ -59,6 +60,7 @@ def console_emulator():
 
         if "|" in input_list:
             pipe_execution(input_list)
+
         else:
             print_func_output(execute_command, input_list, 0, len(input_list))
 
@@ -134,41 +136,45 @@ def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: 
     # usual commands
     command = list[first_ind]
     args = []
+    try:
 
-    # command has no args
-    if last_ind - first_ind <= 1:
-        if stream_arg is None:
-            if command in dict_of_implemented_commands:
-                result = dict_of_implemented_commands[command]()
+        # command has no args
+        if last_ind - first_ind <= 1:
+            if stream_arg is None:
+                if command in dict_of_implemented_commands:
+                    result = dict_of_implemented_commands[command]()
+                else:
+                    args.insert(0, command)
+                    result = func_with_args(not_implemented_functions, args)
             else:
-                args.insert(0, command)
-                result = func_with_args(not_implemented_functions, args)
+                args.append(stream_arg)
+                if command in dict_of_implemented_commands:
+                    result = func_with_args(dict_of_implemented_commands[command], args)
+                else:
+                    result = func_with_args(not_implemented_functions(command), args)
+
+        # command has arguments
         else:
-            args.append(stream_arg)
-            if command in dict_of_implemented_commands:
-                result = func_with_args(dict_of_implemented_commands[command], args)
-            else:
-                result = func_with_args(not_implemented_functions(command), args)
+            for trans_arg in range(first_ind + 1, last_ind):
+                args.append(list[trans_arg])
 
-    # command has arguments
-    else:
-
-        for trans_arg in range(first_ind + 1, last_ind):
-            args.append(list[trans_arg])
-
-        if stream_arg is None:
-            if command in dict_of_implemented_commands:
-                result = func_with_args(dict_of_implemented_commands[command], args)
+            if stream_arg is None:
+                if command in dict_of_implemented_commands:
+                    result = func_with_args(dict_of_implemented_commands[command], args)
+                else:
+                    args.insert(0, command)
+                    result = func_with_args(not_implemented_functions, args)
             else:
-                args.insert(0, command)
-                result = func_with_args(not_implemented_functions, args)
-        else:
-            args.append(stream_arg)
-            if command in dict_of_implemented_commands:
-                result = func_with_args(dict_of_implemented_commands[command], args)
-            else:
-                args.insert(0, command)
-                result = func_with_args(not_implemented_functions, args)
+                args.append(stream_arg)
+                if command in dict_of_implemented_commands:
+                    result = func_with_args(dict_of_implemented_commands[command], args)
+                else:
+                    args.insert(0, command)
+                    result = func_with_args(not_implemented_functions, args)
+
+    except IncorrectCommand as e:
+        print(f"Incorrect command: {e}")
+        return output_stream()
 
     return result
 
