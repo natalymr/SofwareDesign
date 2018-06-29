@@ -6,8 +6,6 @@ from typing import Iterable, Set, Tuple
 from IO_classes import output_stream, input_stream
 from colored_text import ANSI_RED, color_range
 
-from exception import IncorrectCommand
-
 
 def grep(args: [str]) -> output_stream:
     """
@@ -16,6 +14,7 @@ def grep(args: [str]) -> output_stream:
     :param args: list with a flag (optional), a pattern and a resource.
     :return: output stream
     """
+
     result = output_stream()
     if isinstance(args[-1], output_stream):
         input: input_stream = args[-1].convert_to_input()
