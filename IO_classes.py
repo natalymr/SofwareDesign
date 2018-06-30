@@ -13,8 +13,11 @@ class input_stream:
         if input:
             self.__io_str.write(input)
 
-    def get_input(self):
+    def get_input(self) -> str:
         return self.__io_str.getvalue()
+
+    def __iter__(self):
+        return (line + "\n" for line in self.get_input().split("\n"))
 
 
 class output_stream:
@@ -30,5 +33,5 @@ class output_stream:
     def write_to_stream(self, str):
         self.__io_str.write(str)
 
-    def convert_to_input(self):
+    def convert_to_input(self) -> input_stream:
         return input_stream(self.__io_str.getvalue())
