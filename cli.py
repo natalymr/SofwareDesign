@@ -3,6 +3,7 @@ import re
 from typing import List, Dict, Callable
 from decorators import *
 from utilities import *
+from exception import IncorrectCommand
 
 CommandRegistry = Dict[str, Callable[[str], output_stream]]
 dict_of_implemented_commands: CommandRegistry = {
@@ -77,9 +78,16 @@ def console_emulator():
             input_list[first_ind + 1: second_ind + 1] = [' '.join(input_list[first_ind + 1: second_ind + 1])]
 
         if "|" in input_list:
+            #try:
             pipe_execution(input_list)
+            #except IncorrectCommand as ic:
+            #    print(f"Incorrect command: {ic}")
+
         else:
+            #try:
             print_func_output(execute_command, input_list, 0, len(input_list))
+            #except IncorrectCommand as ic:
+            #    print(f"Incorrect command: {ic}")
 
 
 def pipe_execution(input_list):
@@ -147,7 +155,12 @@ def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: 
         dol_sign = dol_sign[0]
 
         var_output = output_stream()
-        option, res = find_and_replace_values_of_all_variables(dol_sign)
+        try:
+            option, res = find_and_replace_values_of_all_variables(dol_sign)
+        except BaseException as e:
+            print(f"Incorrect command: {e}")
+            return output_stream()
+
         if option:
             var_output.write_to_stream(res)
             return var_output
@@ -163,49 +176,56 @@ def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: 
     if eq_sign and not dol_sign_flag:
         eq_sign = eq_sign[0]
 
-        empty_output = output_stream()
-        exe_equal_sign(eq_sign)
+        try:
+            exe_equal_sign(eq_sign)
+        except BaseException as e:
+            print(f"Incorrect command: {e}")
 
-        return empty_output
+        return output_stream()
 
     # usual commands
     command = list[first_ind]
     args = []
 
-    # command has no args
-    if last_ind - first_ind <= 1:
-        if stream_arg is None:
-            if command in dict_of_implemented_commands:
-                result = dict_of_implemented_commands[command]()
+    try:
+        # command has no args
+        if last_ind - first_ind <= 1:
+            if stream_arg is None:
+                if command in dict_of_implemented_commands:
+                    result = dict_of_implemented_commands[command]()
+                else:
+                    args.insert(0, command)
+                    result = func_with_args(not_implemented_functions, args)
             else:
-                args.insert(0, command)
-                result = func_with_args(not_implemented_functions, args)
+                args.append(stream_arg)
+                if command in dict_of_implemented_commands:
+                    result = func_with_args(dict_of_implemented_commands[command], args)
+                else:
+                    result = func_with_args(not_implemented_functions(command), args)
+
+        # command has arguments
         else:
-            args.append(stream_arg)
-            if command in dict_of_implemented_commands:
-                result = func_with_args(dict_of_implemented_commands[command], args)
-            else:
-                result = func_with_args(not_implemented_functions(command), args)
 
-    # command has arguments
-    else:
+            for trans_arg in range(first_ind + 1, last_ind):
+                args.append(list[trans_arg])
 
-        for trans_arg in range(first_ind + 1, last_ind):
-            args.append(list[trans_arg])
+            if stream_arg is None:
+                if command in dict_of_implemented_commands:
+                    result = func_with_args(dict_of_implemented_commands[command], args)
+                else:
+                    args.insert(0, command)
+                    result = func_with_args(not_implemented_functions, args)
+            else:
+                args.append(stream_arg)
+                if command in dict_of_implemented_commands:
+                    result = func_with_args(dict_of_implemented_commands[command], args)
+                else:
+                    args.insert(0, command)
+                    result = func_with_args(not_implemented_functions, args)
 
-        if stream_arg is None:
-            if command in dict_of_implemented_commands:
-                result = func_with_args(dict_of_implemented_commands[command], args)
-            else:
-                args.insert(0, command)
-                result = func_with_args(not_implemented_functions, args)
-        else:
-            args.append(stream_arg)
-            if command in dict_of_implemented_commands:
-                result = func_with_args(dict_of_implemented_commands[command], args)
-            else:
-                args.insert(0, command)
-                result = func_with_args(not_implemented_functions, args)
+    except IncorrectCommand as e:
+        print(f"Incorrect command: {e}")
+        return output_stream()
 
     return result
 
