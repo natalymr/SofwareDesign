@@ -1,5 +1,5 @@
 from IO_classes import *
-from exception import IncorrectCommand
+from exception import IncorrectCommand, TryExit
 from utilities import exit
 
 
@@ -27,5 +27,7 @@ def print_func_output(func, *args):
             to_show = input_stream()
             to_show = output.convert_to_input()
             print(to_show.get_input())
+        except SystemExit as se:
+            raise TryExit()
         except BaseException as be:
             raise IncorrectCommand(cause=be)

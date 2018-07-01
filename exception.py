@@ -1,3 +1,8 @@
+class TryExit(SystemExit):
+
+    def __init__(self):
+        super()
+
 class IncorrectCommand(BaseException):
 
     def __init__(self, message: str = "", cause: BaseException = None):

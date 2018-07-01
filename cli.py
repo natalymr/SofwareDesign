@@ -78,16 +78,18 @@ def console_emulator():
             input_list[first_ind + 1: second_ind + 1] = [' '.join(input_list[first_ind + 1: second_ind + 1])]
 
         if "|" in input_list:
-            #try:
-            pipe_execution(input_list)
-            #except IncorrectCommand as ic:
-            #    print(f"Incorrect command: {ic}")
+            try:
+                pipe_execution(input_list)
+            except IncorrectCommand as e:
+                print(f"Incorrect command: {e}")
 
         else:
-            #try:
-            print_func_output(execute_command, input_list, 0, len(input_list))
-            #except IncorrectCommand as ic:
-            #    print(f"Incorrect command: {ic}")
+            try:
+                print_func_output(execute_command, input_list, 0, len(input_list))
+            except TryExit as te:
+                exit()
+            except IncorrectCommand as e:
+                print(f"Incorrect command: {e}")
 
 
 def pipe_execution(input_list):
@@ -166,6 +168,7 @@ def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: 
             return var_output
         else:
             list[first_ind] = res
+            print(list[first_ind])
     # if there is a $. the end
 
     # if there is a =
@@ -201,7 +204,7 @@ def execute_command(list: List[str], first_ind: int, last_ind: int, stream_arg: 
                 if command in dict_of_implemented_commands:
                     result = func_with_args(dict_of_implemented_commands[command], args)
                 else:
-                    result = func_with_args(not_implemented_functions(command), args)
+                    result = func_with_args(not_implemented_functions, args)
 
         # command has arguments
         else:
@@ -302,6 +305,9 @@ def find_and_replace_values_of_all_variables(expression):
             for i in range(ind_dollar + 1, ind_name_end):
                 name += expression[i]
             result += dict_of_variables[name]
+
+    if result in dict_of_implemented_commands:
+        return False, result
 
     return True, result
 
